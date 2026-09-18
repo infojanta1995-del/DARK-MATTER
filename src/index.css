@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Chakra Petch', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Theme: Dark (Default) */
+    --dm-bg: #030408;
+    --dm-bg-deep: #010204;
+    --dm-surface: rgba(10, 14, 24, 0.72);
+    --dm-surface-elevated: rgba(16, 23, 38, 0.88);
+    --dm-surface-hover: rgba(24, 34, 58, 0.85);
+    --dm-border: rgba(45, 60, 92, 0.45);
+    --dm-border-bright: rgba(85, 115, 175, 0.6);
+    --dm-text: #f0f4fc;
+    --dm-text-secondary: #94a3b8;
+    --dm-muted: #64748b;
+    --dm-divider: rgba(255, 255, 255, 0.08);
+
+    /* Default Accent: Cyan */
+    --dm-accent: #06b6d4;
+    --dm-accent-rgb: 6, 182, 212;
+    --dm-accent-soft: rgba(6, 182, 212, 0.15);
+    --dm-accent-glow: rgba(6, 182, 212, 0.4);
+    --dm-accent-border: rgba(6, 182, 212, 0.5);
+
+    --dm-core-glow: rgba(6, 182, 212, 0.65);
+    --dm-core-halo: rgba(56, 189, 248, 0.25);
+  }
+
+  /* Mixed Theme */
+  [data-theme='mixed'] {
+    --dm-bg: #080a12;
+    --dm-bg-deep: #030408;
+    --dm-surface: rgba(20, 26, 42, 0.85);
+    --dm-surface-elevated: rgba(30, 40, 64, 0.95);
+    --dm-surface-hover: rgba(42, 56, 88, 0.9);
+    --dm-border: rgba(65, 85, 130, 0.5);
+    --dm-border-bright: rgba(110, 145, 210, 0.65);
+    --dm-text: #f8fafc;
+    --dm-text-secondary: #cbd5e1;
+    --dm-muted: #7888a2;
+    --dm-divider: rgba(255, 255, 255, 0.12);
+  }
+
+  /* Light Theme - Clean Futuristic Silver Command Center */
+  [data-theme='light'] {
+    --dm-bg: #0e131f;
+    --dm-bg-deep: #070a12;
+    --dm-surface: rgba(22, 30, 48, 0.88);
+    --dm-surface-elevated: rgba(32, 44, 70, 0.95);
+    --dm-surface-hover: rgba(46, 62, 98, 0.95);
+    --dm-border: rgba(75, 100, 150, 0.55);
+    --dm-border-bright: rgba(125, 160, 230, 0.75);
+    --dm-text: #ffffff;
+    --dm-text-secondary: #e2e8f0;
+    --dm-muted: #94a3b8;
+    --dm-divider: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Accent Color Variants */
+  [data-accent='purple'] {
+    --dm-accent: #a855f7;
+    --dm-accent-rgb: 168, 85, 247;
+    --dm-accent-soft: rgba(168, 85, 247, 0.16);
+    --dm-accent-glow: rgba(168, 85, 247, 0.45);
+    --dm-accent-border: rgba(168, 85, 247, 0.55);
+    --dm-core-glow: rgba(168, 85, 247, 0.7);
+    --dm-core-halo: rgba(192, 132, 252, 0.3);
+  }
+
+  [data-accent='cyan'] {
+    --dm-accent: #06b6d4;
+    --dm-accent-rgb: 6, 182, 212;
+    --dm-accent-soft: rgba(6, 182, 212, 0.16);
+    --dm-accent-glow: rgba(6, 182, 212, 0.45);
+    --dm-accent-border: rgba(6, 182, 212, 0.55);
+    --dm-core-glow: rgba(6, 182, 212, 0.7);
+    --dm-core-halo: rgba(34, 211, 238, 0.3);
+  }
+
+  [data-accent='blue'] {
+    --dm-accent: #3b82f6;
+    --dm-accent-rgb: 59, 130, 246;
+    --dm-accent-soft: rgba(59, 130, 246, 0.16);
+    --dm-accent-glow: rgba(59, 130, 246, 0.45);
+    --dm-accent-border: rgba(59, 130, 246, 0.55);
+    --dm-core-glow: rgba(59, 130, 246, 0.7);
+    --dm-core-halo: rgba(96, 165, 250, 0.3);
+  }
+
+  [data-accent='green'] {
+    --dm-accent: #10b981;
+    --dm-accent-rgb: 16, 185, 129;
+    --dm-accent-soft: rgba(16, 185, 129, 0.16);
+    --dm-accent-glow: rgba(16, 185, 129, 0.45);
+    --dm-accent-border: rgba(16, 185, 129, 0.55);
+    --dm-core-glow: rgba(16, 185, 129, 0.7);
+    --dm-core-halo: rgba(52, 211, 153, 0.3);
+  }
+
+  [data-accent='orange'] {
+    --dm-accent: #f97316;
+    --dm-accent-rgb: 249, 115, 22;
+    --dm-accent-soft: rgba(249, 115, 22, 0.16);
+    --dm-accent-glow: rgba(249, 115, 22, 0.45);
+    --dm-accent-border: rgba(249, 115, 22, 0.55);
+    --dm-core-glow: rgba(249, 115, 22, 0.7);
+    --dm-core-halo: rgba(251, 146, 60, 0.3);
+  }
+
+  [data-accent='pink'] {
+    --dm-accent: #ec4899;
+    --dm-accent-rgb: 236, 72, 153;
+    --dm-accent-soft: rgba(236, 72, 153, 0.16);
+    --dm-accent-glow: rgba(236, 72, 153, 0.45);
+    --dm-accent-border: rgba(236, 72, 153, 0.55);
+    --dm-core-glow: rgba(236, 72, 153, 0.7);
+    --dm-core-halo: rgba(244, 114, 182, 0.3);
+  }
+
+  [data-accent='red'] {
+    --dm-accent: #ef4444;
+    --dm-accent-rgb: 239, 68, 68;
+    --dm-accent-soft: rgba(239, 68, 68, 0.16);
+    --dm-accent-glow: rgba(239, 68, 68, 0.45);
+    --dm-accent-border: rgba(239, 68, 68, 0.55);
+    --dm-core-glow: rgba(239, 68, 68, 0.7);
+    --dm-core-halo: rgba(248, 113, 113, 0.3);
+  }
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--dm-bg);
+  color: var(--dm-text);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom Cockpit Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(4, 6, 12, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(70, 90, 130, 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dm-accent);
+}
+
+/* Subtle Sci-Fi Scanlines Overlay */
+.dm-scanlines {
+  background: linear-gradient(
+    rgba(18, 22, 34, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.02),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.02)
+  );
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Subtle Cockpit Grid */
+.dm-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(40, 55, 85, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(40, 55, 85, 0.12) 1px, transparent 1px);
+}
+
+/* Hologram Panel Border Corners */
+.hud-corner-tl {
+  position: relative;
+}
+.hud-corner-tl::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--dm-accent);
+  border-left: 2px solid var(--dm-accent);
+  pointer-events: none;
+}
+.hud-corner-br::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  border-bottom: 2px solid var(--dm-accent);
+  border-right: 2px solid var(--dm-accent);
+  pointer-events: none;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse-slow {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes pulse-energy {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.03); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 28s linear infinite;
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse-slow 22s linear infinite;
+}
+
+.animate-pulse-energy {
+  animation: pulse-energy 4s ease-in-out infinite;
+}
+

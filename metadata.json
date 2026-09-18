@@ -1,0 +1,6 @@
+{
+  "name": "DARK MATTER",
+  "description": "Futuristic sci-fi AI content creation and story production spacecraft command center.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
