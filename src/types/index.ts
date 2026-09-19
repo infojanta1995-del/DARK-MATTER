@@ -177,6 +177,8 @@ export interface ScriptScene {
   notes?: string;
 }
 
+export type Scene = ScriptScene;
+
 // ============================================================================
 // IDEA GENERATOR & CONCEPT MATRIX TYPES
 // ============================================================================
@@ -341,6 +343,10 @@ export interface ScriptSection {
   directorNotes?: string;
   pacing?: string;
   order: number;
+  sequence?: number;
+  heading?: string;
+  title?: string;
+  type?: string;
 }
 
 export interface ScriptVersion {
@@ -350,6 +356,7 @@ export interface ScriptVersion {
   sections: ScriptSection[];
   scenes: ScriptScene[];
   summaryNote?: string;
+  note?: string;
 }
 
 export interface ScriptSettings {
@@ -383,6 +390,8 @@ export interface Script {
   currentVersionNumber: number;
   primaryMode?: string;
   secondaryModes?: string[];
+  logline?: string;
+  format?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -484,6 +493,10 @@ export interface AnalyticsData {
   keywordSearchVolume: string;
   viralPotential: 'High' | 'Moderate' | 'Exceptional';
   telemetryNotes: string[];
+  impressions?: number;
+  ctr?: string;
+  retentionCurve?: { second: number; percentage: number }[];
+  platformBreakdown?: { platform: string; views: number; share: number }[];
 }
 
 export interface FilmModeSeriesPart {
@@ -520,6 +533,146 @@ export interface RepurposeData {
   segments: RepurposeSegment[];
 }
 
+export interface TrendItem {
+  id: string;
+  topic: string;
+  category: string;
+  growth: string;
+  velocityScore: number;
+  audienceIntent: string;
+  contentGap: string;
+  angle: string;
+  hook: string;
+  suggestedIdea: string;
+  saved?: boolean;
+  velocityHistory?: number[];
+  relatedKeywords?: string[];
+}
+
+export interface ResearchNote {
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+  updatedAt: string;
+}
+
+export interface ResearchSource {
+  id: string;
+  title: string;
+  url: string;
+  credibility: 'Verified Science' | 'Academic Journal' | 'Classified Log' | 'Theoretical Speculation';
+  keyTakeaways: string[];
+  notes?: string;
+}
+
+export interface ResearchClaim {
+  id: string;
+  statement: string;
+  evidence: string;
+  status: 'Verified' | 'Hypothesis' | 'Controversial';
+  sourceRef?: string;
+}
+
+export interface ResearchOpportunity {
+  id: string;
+  trendTopic: string;
+  targetAudience: string;
+  demandScore: number;
+  competitionScore: number;
+  uniquenessScore: number;
+  opportunityScore: number;
+  coreAngle: string;
+  hook: string;
+  suggestedTitle: string;
+  contentGap: string;
+}
+
+export interface ResearchWorkspaceData {
+  notes: ResearchNote[];
+  sources: ResearchSource[];
+  claims: ResearchClaim[];
+  opportunities: ResearchOpportunity[];
+  savedTrends: TrendItem[];
+}
+
+export interface StoryBeat {
+  id: string;
+  act: 'Act 1: Setup & Anomaly' | 'Act 2: Relativistic Descent' | 'Act 3: Singularity & Climax';
+  title: string;
+  description: string;
+  tensionLevel: number; // 0 - 100
+  pacing: 'Slow Build' | 'Accelerating' | 'Breakneck' | 'Sublime Suspense';
+  characterFocus?: string;
+  locationFocus?: string;
+}
+
+export interface StoryPlotArchitecture {
+  logline: string;
+  incitingIncident: string;
+  plotPointOne: string;
+  midpointTwist: string;
+  plotPointTwo: string;
+  climax: string;
+  resolution: string;
+  beats: StoryBeat[];
+}
+
+export interface TimelineClip {
+  id: string;
+  trackId: 'visual' | 'voice' | 'audio' | 'captions';
+  title: string;
+  startTime: number; // in seconds
+  duration: number; // in seconds
+  color: string;
+  assetRef?: string;
+  sceneRef?: string;
+  textSnippet?: string;
+}
+
+export interface TimelineTrack {
+  id: 'visual' | 'voice' | 'audio' | 'captions';
+  name: string;
+  type: 'video' | 'audio' | 'overlay';
+  muted: boolean;
+  solo: boolean;
+  volume: number;
+  clips: TimelineClip[];
+}
+
+export interface TimelineConfig {
+  totalDuration: number;
+  currentTime: number;
+  isPlaying: boolean;
+  zoomLevel: number;
+  aspectRatio: '16:9' | '9:16' | '2.39:1' | '1:1';
+  resolution: '1080p' | '4K UHD' | '720p';
+  tracks: TimelineTrack[];
+}
+
+export interface ThumbnailVariant {
+  id: string;
+  name: string;
+  titleText: string;
+  subtitleText?: string;
+  badgeText?: string;
+  focalElement: string;
+  contrastRating: 'Exceptional' | 'High' | 'Moderate';
+  predictedCtr: string;
+  colorScheme: string;
+  selected?: boolean;
+}
+
+export interface ThumbnailConfig {
+  headlineText: string;
+  subText: string;
+  badgeText: string;
+  themeStyle: 'Dark Void & Amber Accretion' | 'Electric Cyan & Event Horizon' | 'Neon Cybernetic Scan' | 'Monochrome Deep Orbit';
+  aspectRatio: '16:9' | '9:16' | '1:1';
+  variants: ThumbnailVariant[];
+  currentVariantId: string;
+}
+
 export interface ProjectVersion {
   id: string;
   projectId: string;
@@ -534,6 +687,7 @@ export interface ProjectVersion {
 export interface Project {
   id: string;
   name: string;
+  title?: string; // alias for name
   codename: string;
   description: string;
   createdAt: string;
@@ -557,6 +711,10 @@ export interface Project {
   characters: CharacterProfile[];
   locations: LocationProfile[];
   stories: Story[];
+  storyArchitecture?: StoryPlotArchitecture;
+  researchData?: ResearchWorkspaceData;
+  timelineData?: TimelineConfig;
+  thumbnailData?: ThumbnailConfig;
   scenes: ScriptScene[];
   shots: ProductionShot[];
   assets: MediaAsset[];

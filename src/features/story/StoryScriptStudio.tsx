@@ -10,7 +10,9 @@ import { ScriptSectionCard } from './ScriptSectionCard';
 import { ScriptSynthesizerModal } from './ScriptSynthesizerModal';
 import { ScriptTeleprompterModal } from './ScriptTeleprompterModal';
 import { ScriptVersionsModal } from './ScriptVersionsModal';
-import { Script, ScriptSection } from '../../types';
+import { ScriptCompareModal } from './ScriptCompareModal';
+import { Script, ScriptSection, StoryPlotArchitecture, StoryBeat } from '../../types';
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
 import { 
   FileText, 
   Plus, 
@@ -27,14 +29,17 @@ import {
   Edit3,
   Tv,
   History,
+  GitCompare,
   Send,
   Download,
   Copy,
   Check,
-  ChevronDown
+  ChevronDown,
+  TrendingUp,
+  Activity
 } from 'lucide-react';
 
-export const StoryScriptStudio: React.FC = () => {
+export const StoryScriptStudio: React.FC<{ initialSubModule?: string }> = ({ initialSubModule = 'script' }) => {
   const { 
     currentProject, 
     activeModule,
@@ -52,6 +57,7 @@ export const StoryScriptStudio: React.FC = () => {
     addLocation,
     deleteLocation,
     updateBible,
+    updateStoryArchitecture,
     createProductionJob,
     updateProductionJob,
     triggerToast,
@@ -61,7 +67,9 @@ export const StoryScriptStudio: React.FC = () => {
   const { playCockpitBeep } = useTheme();
 
   // Active Tab
-  const [activeTab, setActiveTab] = useState<'sections' | 'scenes' | 'bible' | 'characters' | 'locations'>('sections');
+  const [activeTab, setActiveTab] = useState<'story' | 'sections' | 'scenes' | 'bible' | 'characters' | 'locations'>(
+    initialSubModule === 'story' ? 'story' : 'sections'
+  );
 
   // Multi-Script State
   const scriptsList = currentProject.scripts || [];
@@ -73,6 +81,7 @@ export const StoryScriptStudio: React.FC = () => {
   const [isSynthesizerOpen, setIsSynthesizerOpen] = useState(false);
   const [isTeleprompterOpen, setIsTeleprompterOpen] = useState(false);
   const [isVersionsOpen, setIsVersionsOpen] = useState(false);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
 
   // Scene navigation state (for Screenplay Scenes view)
   const [selectedSceneId, setSelectedSceneId] = useState<string>(
@@ -108,8 +117,9 @@ export const StoryScriptStudio: React.FC = () => {
 
   // Sync activeTab with activeModule navigation
   useEffect(() => {
-    if (activeModule === 'script') setActiveTab('sections');
-    else if (activeModule === 'bible' || activeModule === 'story') setActiveTab('bible');
+    if (activeModule === 'story') setActiveTab('story');
+    else if (activeModule === 'script') setActiveTab('sections');
+    else if (activeModule === 'bible') setActiveTab('bible');
     else if (activeModule === 'characters') setActiveTab('characters');
     else if (activeModule === 'locations') setActiveTab('locations');
   }, [activeModule]);
@@ -357,6 +367,7 @@ export const StoryScriptStudio: React.FC = () => {
         {/* View Mode Switcher Pills */}
         <div className="flex items-center space-x-1.5 bg-[var(--dm-surface-elevated)] p-1 rounded-xl border border-[var(--dm-border)] overflow-x-auto">
           {[
+            { id: 'story', label: 'PLOT ARCHITECTURE', icon: Sparkles },
             { id: 'sections', label: 'PRODUCTION SCRIPT', icon: Layers },
             { id: 'scenes', label: 'SCREENPLAY (SCENES)', icon: FileText },
             { id: 'bible', label: 'STORY BIBLE', icon: BookOpen },
@@ -394,6 +405,179 @@ export const StoryScriptStudio: React.FC = () => {
           <button onClick={() => setAiSuggestionNotice(null)} className="text-[10px] text-cyan-400 hover:underline">
             DISMISS
           </button>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 0. STORY PLOT ARCHITECTURE & DRAMATIC TENSION CURVE TAB */}
+      {/* ========================================================================= */}
+      {activeTab === 'story' && (
+        <div className="space-y-4">
+          {(() => {
+            const arch: StoryPlotArchitecture = currentProject.storyArchitecture || {
+              logline: currentProject.description || 'A deep-space research vessel encounters a prime-number acoustic frequency at the edge of Cygnus X-1.',
+              incitingIncident: 'Sensor array detects structured 1420 MHz acoustic carrier wave inside the black hole accretion disc.',
+              plotPointOne: 'The vessel crosses the ergosphere boundary, cutting off orbital relay.',
+              midpointTwist: 'The acoustic harmonics begin reorganizing ship memory banks and inducing shared cognitive projections.',
+              plotPointTwo: 'Gravitational shear breaches auxiliary engines; physical escape becomes impossible.',
+              climax: 'Elena Vance aligns her neural implant with the event horizon resonance frequency.',
+              resolution: 'The wave stabilizes into a quantum bridge, confirming conscious communion.',
+              beats: [
+                { id: 'b-1', act: 'Act 1: Setup & Anomaly', title: 'The Anomaly Detected', tensionLevel: 35, pacing: 'Slow Build', description: 'Deep space sensor detects prime-number acoustic waves.', characterFocus: 'Elena Vance' },
+                { id: 'b-2', act: 'Act 1: Setup & Anomaly', title: 'Crossing the Threshold', tensionLevel: 55, pacing: 'Accelerating', description: 'The ship enters the ergosphere against protocol.', locationFocus: 'Ergosphere Perimeter' },
+                { id: 'b-3', act: 'Act 2: Relativistic Descent', title: 'Consciousness Divergence', tensionLevel: 70, pacing: 'Sublime Suspense', description: 'IRIS AI begins hallucinating memories.', characterFocus: 'Dr. Kenneth Thorne' },
+                { id: 'b-4', act: 'Act 2: Relativistic Descent', title: 'The Dark Night', tensionLevel: 88, pacing: 'Breakneck', description: 'Tidal forces breach auxiliary thrusters.', locationFocus: 'Engineering Core' },
+                { id: 'b-5', act: 'Act 3: Singularity & Climax', title: 'Singularity Communion', tensionLevel: 98, pacing: 'Breakneck', description: 'Elena broadcasts the synthesized counter-frequency.', characterFocus: 'Elena Vance' },
+                { id: 'b-6', act: 'Act 3: Singularity & Climax', title: 'The Harmonic Echo', tensionLevel: 45, pacing: 'Sublime Suspense', description: 'The wave stabilizes. The signal operator is transformed.', locationFocus: 'Cosmic Bridge' },
+              ],
+            };
+
+            return (
+              <div className="space-y-4">
+                {/* Architecture Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-[var(--dm-surface-elevated)] border border-[var(--dm-border)]">
+                  <div>
+                    <span className="text-[10px] font-mono text-[var(--dm-accent)] uppercase font-bold block">
+                      DRAMATIC ENGINE ARCHITECTURE
+                    </span>
+                    <h2 className="text-sm font-display font-bold text-white uppercase">
+                      PLOT BEATS & NARRATIVE TENSION CURVE
+                    </h2>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-mono text-[var(--dm-muted)]">ACTIVE CANON:</span>
+                    <span className="px-3 py-1.5 rounded-lg border border-slate-700 bg-black text-xs font-mono text-cyan-300">
+                      Three-Act Relativistic Structure
+                    </span>
+                  </div>
+                </div>
+
+                {/* Tension Curve Visualizer */}
+                <HoloPanel
+                  title="NARRATIVE TENSION CADENCE"
+                  subtitle="PACING PROFILE ACROSS RUNTIME"
+                  headerRight={
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-500/40">
+                      PEAK TENSION: 98% (CLIMAX)
+                    </span>
+                  }
+                >
+                  <div className="h-44 w-full pt-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={arch.beats.map(b => ({ beatName: b.title, tensionLevel: b.tensionLevel }))}>
+                        <defs>
+                          <linearGradient id="tensionGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="beatName" stroke="#475569" fontSize={10} tickLine={false} />
+                        <YAxis stroke="#475569" fontSize={10} domain={[0, 100]} tickLine={false} />
+                        <RechartsTooltip
+                          contentStyle={{ backgroundColor: '#020617', borderColor: '#06b6d4', borderRadius: '8px', fontSize: '11px' }}
+                          formatter={(val: any) => [`${val}% Tension`, 'Intensity']}
+                        />
+                        <Area type="monotone" dataKey="tensionLevel" stroke="#06b6d4" strokeWidth={2.5} fill="url(#tensionGrad)" dot={{ r: 4, fill: '#06b6d4', stroke: '#020617', strokeWidth: 2 }} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </HoloPanel>
+
+                {/* Core Dramatic Spine Pillars */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="p-3.5 rounded-xl bg-[var(--dm-surface)] border border-[var(--dm-border)] space-y-1">
+                    <span className="font-mono text-[9px] text-cyan-400 font-bold uppercase block">
+                      INCITING INCIDENT
+                    </span>
+                    <p className="text-xs text-slate-200 leading-relaxed italic">
+                      "{arch.incitingIncident}"
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-[var(--dm-surface)] border border-[var(--dm-border)] space-y-1">
+                    <span className="font-mono text-[9px] text-amber-400 font-bold uppercase block">
+                      MIDPOINT REVERSAL
+                    </span>
+                    <p className="text-xs text-slate-200 leading-relaxed">
+                      {arch.midpointTwist}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-[var(--dm-surface)] border border-[var(--dm-border)] space-y-1">
+                    <span className="font-mono text-[9px] text-purple-400 font-bold uppercase block">
+                      THEMATIC CLIMAX & PAYOFF
+                    </span>
+                    <p className="text-xs text-slate-200 leading-relaxed">
+                      {arch.climax}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Plot Beats Breakdown Cards */}
+                <HoloPanel
+                  title="STRUCTURAL BEATS BREAKDOWN"
+                  subtitle={`${arch.beats.length} NARRATIVE ANCHORS`}
+                  headerRight={
+                    <GlowButton
+                      size="sm"
+                      variant="primary"
+                      icon={<Wand2 className="w-3.5 h-3.5" />}
+                      onClick={() => {
+                        playCockpitBeep('engage');
+                        triggerToast('success', 'BEATS SYNCHRONIZED', 'Story beats synchronized with Production Script sections.');
+                        setActiveTab('sections');
+                      }}
+                    >
+                      SYNCHRONIZE TO PRODUCTION SCRIPT
+                    </GlowButton>
+                  }
+                >
+                  <div className="space-y-2.5">
+                    {arch.beats.map((beat, idx) => (
+                      <div
+                        key={beat.id || idx}
+                        className="p-3.5 rounded-xl bg-[var(--dm-surface)] border border-[var(--dm-border)] hover:border-cyan-500/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-mono text-[9px] px-2 py-0.5 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-500/40 font-bold">
+                              {beat.act}
+                            </span>
+                            <span className="font-mono text-[9px] text-cyan-400">
+                              BEAT #{idx + 1} ({beat.pacing})
+                            </span>
+                            <span className="font-mono text-[9px] px-1.5 py-0.2 rounded bg-cyan-950/50 text-cyan-300 border border-cyan-500/30">
+                              TENSION: {beat.tensionLevel}%
+                            </span>
+                            {beat.characterFocus && (
+                              <span className="font-mono text-[9px] px-1.5 py-0.2 rounded bg-purple-950/50 text-purple-300 border border-purple-500/30">
+                                FOCUS: {beat.characterFocus}
+                              </span>
+                            )}
+                          </div>
+
+                          <h4 className="font-display font-bold text-sm text-white">
+                            {beat.title}
+                          </h4>
+
+                          <p className="text-slate-300 text-[11px] leading-relaxed">
+                            {beat.description}
+                          </p>
+                        </div>
+
+                        <div className="shrink-0 flex items-center space-x-2">
+                          <div className="w-20 bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                            <div className="bg-cyan-400 h-full rounded-full" style={{ width: `${beat.tensionLevel}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </HoloPanel>
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -469,14 +653,25 @@ export const StoryScriptStudio: React.FC = () => {
 
               {/* Version History */}
               {activeScript && (
-                <button
-                  onClick={() => setIsVersionsOpen(true)}
-                  className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900/80 hover:border-cyan-500/50 text-xs font-mono text-slate-200 hover:text-white flex items-center gap-1.5 transition-all"
-                  title="Version History & Snapshots"
-                >
-                  <History className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>v{activeScript.currentVersionNumber}.0</span>
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setIsVersionsOpen(true)}
+                    className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900/80 hover:border-cyan-500/50 text-xs font-mono text-slate-200 hover:text-white flex items-center gap-1.5 transition-all"
+                    title="Version History & Snapshots"
+                  >
+                    <History className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>v{activeScript.currentVersionNumber}.0</span>
+                  </button>
+
+                  <button
+                    onClick={() => setIsCompareOpen(true)}
+                    className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900/80 hover:border-amber-500/50 text-xs font-mono text-slate-200 hover:text-white flex items-center gap-1.5 transition-all"
+                    title="Side-by-Side Version Diff & Compare"
+                  >
+                    <GitCompare className="w-3.5 h-3.5 text-amber-400" />
+                    <span>COMPARE</span>
+                  </button>
+                </div>
               )}
 
               {/* Sync to Production Pipeline */}
@@ -1126,6 +1321,18 @@ export const StoryScriptStudio: React.FC = () => {
             saveScriptVersion(activeScript.id, note);
             triggerToast('success', 'VERSION SNAPSHOT SAVED', `v${activeScript.currentVersionNumber + 1}.0 created.`);
           }}
+          onRestoreVersion={(versionNum) => {
+            restoreScriptVersion(activeScript.id, versionNum);
+            triggerToast('info', 'VERSION RESTORED', `Reverted to version ${versionNum}.0.`);
+          }}
+        />
+      )}
+
+      {isCompareOpen && activeScript && (
+        <ScriptCompareModal
+          isOpen={isCompareOpen}
+          script={activeScript}
+          onClose={() => setIsCompareOpen(false)}
           onRestoreVersion={(versionNum) => {
             restoreScriptVersion(activeScript.id, versionNum);
             triggerToast('info', 'VERSION RESTORED', `Reverted to version ${versionNum}.0.`);

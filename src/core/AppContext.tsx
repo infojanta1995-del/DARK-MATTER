@@ -18,7 +18,17 @@ import {
   StorageProvider,
   JobStatus,
   Idea,
-  Script
+  Script,
+  TrendItem,
+  ResearchNote,
+  ResearchSource,
+  ResearchClaim,
+  ResearchOpportunity,
+  StoryPlotArchitecture,
+  TimelineConfig,
+  ThumbnailConfig,
+  SEOData,
+  AnalyticsData
 } from '../types';
 import { INITIAL_PROJECT, INITIAL_TELEMETRY } from './initialData';
 import { useTheme } from '../theme/ThemeContext';
@@ -76,6 +86,7 @@ interface AppContextType {
   addNewShot: (sceneId: string, shot: Partial<ProductionShot>) => void;
   deleteShot: (shotId: string) => void;
   addNewAsset: (asset: Omit<MediaAsset, 'id' | 'createdAt'>) => void;
+  addAsset: (asset: Omit<MediaAsset, 'id' | 'createdAt'>) => void;
   deleteAsset: (assetId: string) => void;
   setStoryModes: (primary: string, secondary: string) => void;
   updateBible: (bibleUpdates: Partial<StoryBible>) => void;
@@ -98,6 +109,22 @@ interface AppContextType {
   syncScriptToProduction: (script: Script) => void;
   createProductionJob: (type: JobType, input: Record<string, any>) => ProductionJob;
   updateProductionJob: (jobId: string, status: JobStatus, output?: any, error?: string) => void;
+  saveTrend: (trend: TrendItem) => void;
+  deleteSavedTrend: (trendId: string) => void;
+  addResearchNote: (note: Omit<ResearchNote, 'id' | 'updatedAt'>) => void;
+  updateResearchNote: (noteId: string, updates: Partial<ResearchNote>) => void;
+  deleteResearchNote: (noteId: string) => void;
+  addResearchSource: (source: Omit<ResearchSource, 'id'>) => void;
+  deleteResearchSource: (sourceId: string) => void;
+  addResearchClaim: (claim: Omit<ResearchClaim, 'id'>) => void;
+  toggleClaimStatus: (claimId: string) => void;
+  deleteResearchClaim: (claimId: string) => void;
+  convertOpportunityToIdea: (opportunity: ResearchOpportunity) => Idea;
+  updateStoryArchitecture: (updates: Partial<StoryPlotArchitecture>) => void;
+  updateTimelineConfig: (updates: Partial<TimelineConfig>) => void;
+  updateThumbnailConfig: (updates: Partial<ThumbnailConfig>) => void;
+  updateSEOData: (updates: Partial<SEOData>) => void;
+  updateAnalyticsData: (updates: Partial<AnalyticsData>) => void;
   triggerToast: (type: ToastType, title: string, message: string) => void;
   requestConfirmation: (options: ConfirmationOptions) => void;
   setIsCommandPaletteOpen: (open: boolean) => void;
@@ -1213,6 +1240,380 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   }, [currentProject.id]);
 
+  // Trends & Research Handlers
+  const saveTrend = useCallback((trend: TrendItem) => {
+    playCockpitBeep('engage');
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id) {
+          const currentSaved = p.researchData?.savedTrends || [];
+          const exists = currentSaved.some((t) => t.id === trend.id || t.topic === trend.topic);
+          const updatedSaved = exists
+            ? currentSaved.map((t) => (t.id === trend.id || t.topic === trend.topic ? { ...trend, saved: true } : t))
+            : [{ ...trend, saved: true }, ...currentSaved];
+          return {
+            ...p,
+            researchData: {
+              notes: p.researchData?.notes || [],
+              sources: p.researchData?.sources || [],
+              claims: p.researchData?.claims || [],
+              opportunities: p.researchData?.opportunities || [],
+              savedTrends: updatedSaved,
+            },
+          };
+        }
+        return p;
+      })
+    );
+    triggerToast('success', 'TREND CAPTURED', `Saved "${trend.topic}" to Quantum Project Memory.`);
+  }, [currentProject.id, playCockpitBeep, triggerToast]);
+
+  const deleteSavedTrend = useCallback((trendId: string) => {
+    playCockpitBeep('click');
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id && p.researchData) {
+          return {
+            ...p,
+            researchData: {
+              ...p.researchData,
+              savedTrends: p.researchData.savedTrends.filter((t) => t.id !== trendId),
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id, playCockpitBeep]);
+
+  const addResearchNote = useCallback((note: Omit<ResearchNote, 'id' | 'updatedAt'>) => {
+    playCockpitBeep('engage');
+    const newNote: ResearchNote = {
+      ...note,
+      id: `note-${Date.now()}`,
+      updatedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+    };
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id) {
+          const currentNotes = p.researchData?.notes || [];
+          return {
+            ...p,
+            researchData: {
+              sources: p.researchData?.sources || [],
+              claims: p.researchData?.claims || [],
+              opportunities: p.researchData?.opportunities || [],
+              savedTrends: p.researchData?.savedTrends || [],
+              notes: [newNote, ...currentNotes],
+            },
+          };
+        }
+        return p;
+      })
+    );
+    triggerToast('success', 'RESEARCH LOGGED', `Note "${newNote.title}" logged in intelligence vault.`);
+  }, [currentProject.id, playCockpitBeep, triggerToast]);
+
+  const updateResearchNote = useCallback((noteId: string, updates: Partial<ResearchNote>) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id && p.researchData) {
+          return {
+            ...p,
+            researchData: {
+              ...p.researchData,
+              notes: p.researchData.notes.map((n) =>
+                n.id === noteId ? { ...n, ...updates, updatedAt: new Date().toISOString().replace('T', ' ').slice(0, 16) } : n
+              ),
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id]);
+
+  const deleteResearchNote = useCallback((noteId: string) => {
+    playCockpitBeep('click');
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id && p.researchData) {
+          return {
+            ...p,
+            researchData: {
+              ...p.researchData,
+              notes: p.researchData.notes.filter((n) => n.id !== noteId),
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id, playCockpitBeep]);
+
+  const addResearchSource = useCallback((source: Omit<ResearchSource, 'id'>) => {
+    playCockpitBeep('engage');
+    const newSource: ResearchSource = {
+      ...source,
+      id: `source-${Date.now()}`,
+    };
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id) {
+          const currentSources = p.researchData?.sources || [];
+          return {
+            ...p,
+            researchData: {
+              notes: p.researchData?.notes || [],
+              claims: p.researchData?.claims || [],
+              opportunities: p.researchData?.opportunities || [],
+              savedTrends: p.researchData?.savedTrends || [],
+              sources: [newSource, ...currentSources],
+            },
+          };
+        }
+        return p;
+      })
+    );
+    triggerToast('success', 'SOURCE REGISTERED', `Source "${newSource.title}" added with ${newSource.credibility} rating.`);
+  }, [currentProject.id, playCockpitBeep, triggerToast]);
+
+  const deleteResearchSource = useCallback((sourceId: string) => {
+    playCockpitBeep('click');
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id && p.researchData) {
+          return {
+            ...p,
+            researchData: {
+              ...p.researchData,
+              sources: p.researchData.sources.filter((s) => s.id !== sourceId),
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id, playCockpitBeep]);
+
+  const addResearchClaim = useCallback((claim: Omit<ResearchClaim, 'id'>) => {
+    playCockpitBeep('engage');
+    const newClaim: ResearchClaim = {
+      ...claim,
+      id: `claim-${Date.now()}`,
+    };
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id) {
+          const currentClaims = p.researchData?.claims || [];
+          return {
+            ...p,
+            researchData: {
+              notes: p.researchData?.notes || [],
+              sources: p.researchData?.sources || [],
+              opportunities: p.researchData?.opportunities || [],
+              savedTrends: p.researchData?.savedTrends || [],
+              claims: [newClaim, ...currentClaims],
+            },
+          };
+        }
+        return p;
+      })
+    );
+    triggerToast('success', 'EVIDENCE CLAIM RECORDED', 'Claim added to fact matrix.');
+  }, [currentProject.id, playCockpitBeep, triggerToast]);
+
+  const toggleClaimStatus = useCallback((claimId: string) => {
+    playCockpitBeep('click');
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id && p.researchData) {
+          return {
+            ...p,
+            researchData: {
+              ...p.researchData,
+              claims: p.researchData.claims.map((c) => {
+                if (c.id === claimId) {
+                  const nextStatus = c.status === 'Verified' ? 'Hypothesis' : c.status === 'Hypothesis' ? 'Controversial' : 'Verified';
+                  return { ...c, status: nextStatus };
+                }
+                return c;
+              }),
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id, playCockpitBeep]);
+
+  const deleteResearchClaim = useCallback((claimId: string) => {
+    playCockpitBeep('click');
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id && p.researchData) {
+          return {
+            ...p,
+            researchData: {
+              ...p.researchData,
+              claims: p.researchData.claims.filter((c) => c.id !== claimId),
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id, playCockpitBeep]);
+
+  const convertOpportunityToIdea = useCallback((opp: ResearchOpportunity): Idea => {
+    playCockpitBeep('engage');
+    const newIdeaId = `idea-${Date.now()}`;
+    const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+    const newIdea: Idea = {
+      id: newIdeaId,
+      projectId: currentProject.id,
+      title: opp.suggestedTitle || opp.trendTopic,
+      hook: opp.hook,
+      concept: `${opp.coreAngle} Addresses key audience intent: ${opp.targetAudience}. Solves market gap: ${opp.contentGap}`,
+      coreConcept: opp.coreAngle,
+      uniqueAngle: opp.coreAngle,
+      targetAudience: opp.targetAudience,
+      contentType: currentProject.contentType,
+      recommendedPlatform: currentProject.targetPlatform,
+      estimatedDuration: '8–12 minutes',
+      trendScore: opp.demandScore,
+      trendRelevance: opp.demandScore,
+      audienceInterestScore: opp.uniquenessScore,
+      audienceInterest: opp.uniquenessScore,
+      competitionScore: opp.competitionScore,
+      competition: opp.competitionScore,
+      opportunityScore: opp.opportunityScore,
+      whyThisIdea: `High opportunity index (${opp.opportunityScore}/100) combining ${opp.demandScore}% demand with minimal competitor penetration.`,
+      keywords: opp.trendTopic.toLowerCase().split(' '),
+      hashtags: opp.trendTopic.split(' ').map((w) => `#${w.replace(/[^a-zA-Z0-9]/g, '')}`),
+      thumbnailConcept: `High contrast imagery illustrating ${opp.coreAngle}`,
+      cta: 'Engage in the comments with your theory.',
+      status: 'saved',
+      primaryMode: currentProject.primaryMode,
+      secondaryModes: [currentProject.secondaryMode],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id) {
+          return {
+            ...p,
+            ideas: [newIdea, ...(p.ideas || [])],
+          };
+        }
+        return p;
+      })
+    );
+
+    triggerToast('success', 'OPPORTUNITY SYNTHESIZED', `Generated Idea "${newIdea.title}" with score ${opp.opportunityScore}/100.`);
+    return newIdea;
+  }, [currentProject.id, currentProject.contentType, currentProject.targetPlatform, currentProject.primaryMode, currentProject.secondaryMode, playCockpitBeep, triggerToast]);
+
+  const updateStoryArchitecture = useCallback((updates: Partial<StoryPlotArchitecture>) => {
+    playCockpitBeep('pulse');
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id) {
+          const currentArch = p.storyArchitecture || {
+            logline: '',
+            incitingIncident: '',
+            plotPointOne: '',
+            midpointTwist: '',
+            plotPointTwo: '',
+            climax: '',
+            resolution: '',
+            beats: [],
+          };
+          return {
+            ...p,
+            storyArchitecture: {
+              ...currentArch,
+              ...updates,
+            },
+          };
+        }
+        return p;
+      })
+    );
+    triggerToast('info', 'STORY MATRIX UPDATED', 'Plot structure and dramatic tension synchronized.');
+  }, [currentProject.id, playCockpitBeep, triggerToast]);
+
+  const updateTimelineConfig = useCallback((updates: Partial<TimelineConfig>) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id && p.timelineData) {
+          return {
+            ...p,
+            timelineData: {
+              ...p.timelineData,
+              ...updates,
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id]);
+
+  const updateThumbnailConfig = useCallback((updates: Partial<ThumbnailConfig>) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id && p.thumbnailData) {
+          return {
+            ...p,
+            thumbnailData: {
+              ...p.thumbnailData,
+              ...updates,
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id]);
+
+  const updateSEOData = useCallback((updates: Partial<SEOData>) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id) {
+          return {
+            ...p,
+            seo: {
+              ...p.seo,
+              ...updates,
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id]);
+
+  const updateAnalyticsData = useCallback((updates: Partial<AnalyticsData>) => {
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.id === currentProject.id) {
+          return {
+            ...p,
+            analytics: {
+              ...p.analytics,
+              ...updates,
+            },
+          };
+        }
+        return p;
+      })
+    );
+  }, [currentProject.id]);
+
   return (
     <AppContext.Provider
       value={{
@@ -1244,6 +1645,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addNewShot,
         deleteShot,
         addNewAsset,
+        addAsset: addNewAsset,
         deleteAsset,
         setStoryModes,
         updateBible,
@@ -1266,6 +1668,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         syncScriptToProduction,
         createProductionJob,
         updateProductionJob,
+        saveTrend,
+        deleteSavedTrend,
+        addResearchNote,
+        updateResearchNote,
+        deleteResearchNote,
+        addResearchSource,
+        deleteResearchSource,
+        addResearchClaim,
+        toggleClaimStatus,
+        deleteResearchClaim,
+        convertOpportunityToIdea,
+        updateStoryArchitecture,
+        updateTimelineConfig,
+        updateThumbnailConfig,
+        updateSEOData,
+        updateAnalyticsData,
         triggerToast,
         requestConfirmation,
         setIsCommandPaletteOpen,

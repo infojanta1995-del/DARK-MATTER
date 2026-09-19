@@ -10,6 +10,7 @@ import { TopCommandBar } from './components/layout/TopCommandBar';
 import { LeftNavigation } from './components/layout/LeftNavigation';
 import { SystemStatusBar } from './components/layout/SystemStatusBar';
 import { ProjectCreationModal } from './features/projects/ProjectCreationModal';
+import { CommandPaletteModal } from './components/common/CommandPaletteModal';
 
 // Feature Views
 import { MainDashboardView } from './features/dashboard/MainDashboardView';
@@ -36,7 +37,7 @@ const WorkspaceBridge: React.FC = () => {
 
       case 'trends':
       case 'research':
-        return <ResearchIntelligenceView />;
+        return <ResearchIntelligenceView initialSubModule={activeModule} />;
 
       case 'ideas':
         return <IdeasGeneratorView />;
@@ -46,12 +47,12 @@ const WorkspaceBridge: React.FC = () => {
       case 'characters':
       case 'locations':
       case 'script':
-        return <StoryScriptStudio />;
+        return <StoryScriptStudio initialSubModule={activeModule} />;
 
       case 'production':
       case 'scenes':
       case 'shots':
-        return <ProductionControlRoom />;
+        return <ProductionControlRoom initialSubModule={activeModule} />;
 
       case 'media':
         return <MediaVaultView />;
@@ -114,6 +115,9 @@ const WorkspaceBridge: React.FC = () => {
 
       {/* Modal: Project Creation Protocol */}
       <ProjectCreationModal />
+
+      {/* Modal: Universal Command Palette (Ctrl+K) */}
+      <CommandPaletteModal />
     </div>
   );
 };
